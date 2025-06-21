@@ -1,0 +1,4 @@
+pandas
+eurostat
+xmltodict
+openpyxl
