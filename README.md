@@ -17,6 +17,10 @@ A Docker Compose–based pipeline designed to **retrieve, process, and store str
   - Control each data retrieval via environment flags (`RUN_ENTSOE`, `RUN_EUROSTAT`, `RUN_BSO`, `RUN_OPENMETEO`).
   - Customize retrieval date ranges and parameters directly in `.env`.
 
+- **Preprocessing scripts**:
+  - Explicitly merges monthly ENTSO-E and Open-Meteo datasets into yearly structured files.
+  - Provides consolidated and clearly structured metadata.
+
 - **Detailed logging**:
   - Comprehensive logs stored in `logs/numerical_data_app.log`, capturing retrieval progress, successes, and errors.
 
@@ -42,7 +46,9 @@ numerical_retrieval
     ├── entsoe_retrieval.py
     ├── eurostat_retrieval.py
     ├── bso_retrieval.py
-    └── openmeteo_retrieval.py
+    ├── openmeteo_retrieval.py
+    ├── openmeteo_retrieval.py
+    └── openmeteo_preprocessing.py
 ```
 
 - `main.py`: Coordinates retrieval processes based on environment configurations.
@@ -71,6 +77,8 @@ RUN_ENTSOE=1
 RUN_EUROSTAT=1
 RUN_BSO=1
 RUN_OPENMETEO=1
+RUN_ENTSOE_PREPROCESSING=1
+RUN_OPENMETEO_PREPROCESSING=1
 
 # Retrieval Parameters
 ENTSOE_START_YEAR=2021
@@ -108,9 +116,13 @@ Datasets and metadata structured as follows:
 ```text
 output/
 ├── entsoe/
-│   ├── Germany_actual_load_20210101_20210131.csv
-│   ├── Germany_actual_load_20210101_20210131_metadata.json
-│   └── ...
+│   ├── Austria_actual_load_20210101_20210131.csv
+│   ├── Austria_actual_load_20210101_20210131_metadata.json
+│   ├── ...
+│   └── yearly/
+│       ├── Austria_actual_load_2021.csv
+│       ├── Austria_actual_load_2021_metadata.json
+│       └── ...
 ├── eurostat/
 │   ├── renewable_energy_share.csv
 │   ├── renewable_energy_share_metadata.json
@@ -119,10 +131,14 @@ output/
 │   ├── building_stock_characteristics.csv
 │   ├── building_stock_characteristics_metadata.json
 │   └── ...
-└── openmeteo/
-    ├── germany_berlin_20210101_20210131.csv
-    ├── germany_berlin_20210101_20210131_metadata.json
-    └── ...
+├── openmeteo/
+│    ├── austria_graz_20210101_20210131.csv
+│    ├── austria_graz_20210101_20210131_metadata.json
+│    ├── ...
+│    └── yearly/
+│        ├── austria_graz_2021.csv
+│        ├── austria_graz_2021_metadata.json
+└──      └── ...
 ```
 
 ## 🐳 Build & Run

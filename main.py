@@ -5,6 +5,8 @@ from scripts.bso_retrieval import download_and_process_bso_data
 from scripts.entsoe_retrieval import retrieve_monthly_entsoe_datasets
 from scripts.eurostat_retrieval import retrieve_eurostat_datasets
 from scripts.openmeteo_retrieval import retrieve_yearly_weather
+from scripts.entsoe_preprocessing import merge_monthly_to_yearly
+from scripts.openmeteo_preprocessing import merge_monthly_weather_to_yearly
 
 def configure_logging():
     logging.basicConfig(
@@ -25,12 +27,16 @@ def main():
     RUN_ENTSOE = os.getenv("RUN_ENTSOE", "1") == "1"
     RUN_EUROSTAT = os.getenv("RUN_EUROSTAT", "1") == "1"
     RUN_OPENMETEO = os.getenv("RUN_OPENMETEO", "1") == "1"
+    RUN_ENTSOE_PREPROCESSING = os.getenv("RUN_ENTSOE_PREPROCESSING", "1") == "1"
+    RUN_OPENMETEO_PREPROCESSING = os.getenv("RUN_OPENMETEO_PREPROCESSING", "1") == "1"
 
     logging.info(f"""
         RUN_BSO: {RUN_BSO},
         RUN_ENTSOE: {RUN_ENTSOE},
         RUN_EUROSTAT: {RUN_EUROSTAT},
-        RUN_OPENMETEO: {RUN_OPENMETEO}
+        RUN_OPENMETEO: {RUN_OPENMETEO},
+        RUN_ENTSOE_PREPROCESSING: {RUN_ENTSOE_PREPROCESSING},
+        RUN_OPENMETEO_PREPROCESSING: {RUN_OPENMETEO_PREPROCESSING}
     """)
 
     # Directories setup
@@ -38,6 +44,8 @@ def main():
     Path("output/entsoe").mkdir(parents=True, exist_ok=True)
     Path("output/eurostat").mkdir(parents=True, exist_ok=True)
     Path("output/openmeteo").mkdir(parents=True, exist_ok=True)
+    Path("output/entsoe/yearly").mkdir(parents=True, exist_ok=True) 
+    Path("output/openmeteo/yearly").mkdir(parents=True, exist_ok=True)
 
     # --- BSO Data Retrieval ---
     if RUN_BSO:
@@ -281,6 +289,34 @@ def main():
             )
 
             logging.info("Open-Meteo weather data retrieved successfully.")
+        except Exception as e:
+            logging.error(f"Open-Meteo retrieval failed: {e}")
+    
+    # --- ENTSO-E Data Preprocessing (Yearly) ---
+    if RUN_ENTSOE_PREPROCESSING:
+        try:
+            logging.info("=== Starting ENTSO-E Data Preprocessing ===")
+            entsoe_monthly_output_dir = "output/entsoe"
+            entsoe_yearly_output_dir = "output/entsoe/yearly"
+            merge_monthly_to_yearly(
+                input_folder=entsoe_monthly_output_dir,
+                output_folder=entsoe_yearly_output_dir
+            )
+            logging.info("ENTSO-E data preprocessing successfully completed.")
+        except Exception as e:
+            logging.error(f"ENTSO-E preprocessing failed: {e}")
+
+    # --- Open-Meteo Data Preprocessing (Yearly) ---
+    if RUN_OPENMETEO_PREPROCESSING:
+        try:
+            logging.info("=== Starting Open-Meteo Data Preprocessing ===")
+            openmeteo_monthly_output_dir = "output/openmeteo"
+            openmeteo_yearly_output_dir = "output/openmeteo/yearly"
+            merge_monthly_weather_to_yearly(
+                input_folder= openmeteo_monthly_output_dir,
+                output_folder=openmeteo_yearly_output_dir
+            )
+            logging.info("Open-Meteo yearly data preprocessing successfully completed.")
         except Exception as e:
             logging.error(f"Open-Meteo retrieval failed: {e}")
 
